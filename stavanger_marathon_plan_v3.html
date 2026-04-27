@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Stavanger Marathon 2026</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #0e0f11;
+    --surface: #16181c;
+    --surface2: #1e2026;
+    --border: rgba(255,255,255,0.07);
+    --text: #f0ede8;
+    --muted: #7a7e8a;
+    --accent: #c8f06e;
+    --accent2: #6eb8f0;
+    --accent3: #f0a96e;
+    --accent4: #f06e9a;
+    --easy-c: #6ef0b8;
+    --tempo-c: #6eb8f0;
+    --peak-c: #f0a96e;
+    --race-c: #f06e9a;
+    --recover-c: #9a9ea8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding-bottom: 80px;
+  }
+
+  .hero {
+    padding: 48px 20px 32px;
+    background: linear-gradient(160deg, #111418 0%, #0e0f11 60%);
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 260px; height: 260px;
+    background: radial-gradient(circle, rgba(200,240,110,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-label { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; font-weight: 500; }
+  .hero-title { font-family: 'DM Serif Display', serif; font-size: 38px; line-height: 1.1; color: var(--text); margin-bottom: 6px; }
+  .hero-title em { font-style: italic; color: var(--accent); }
+  .hero-sub { font-size: 14px; color: var(--muted); margin-bottom: 24px; }
+  .hero-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .hero-stat { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 8px; text-align: center; }
+  .hero-stat-val { font-family: 'DM Serif Display', serif; font-size: 20px; color: var(--accent); display: block; }
+  .hero-stat-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+
+  .tabs-wrap {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--bg); border-bottom: 1px solid var(--border);
+    padding: 0 20px; display: flex; gap: 0; overflow-x: auto; scrollbar-width: none;
+  }
+  .tabs-wrap::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    flex-shrink: 0; padding: 14px 16px; font-size: 13px; font-weight: 500;
+    color: var(--muted); border: none; background: none; cursor: pointer;
+    border-bottom: 2px solid transparent; transition: color 0.2s, border-color 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .phase-header {
+    padding: 20px 20px 8px; font-size: 10px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 10px;
+  }
+  .phase-header::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  .week-card { margin: 0 12px 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; transition: border-color 0.2s; }
+  .week-card.open { border-color: rgba(255,255,255,0.14); }
+
+  .week-header { display: flex; align-items: center; gap: 10px; padding: 14px; cursor: pointer; user-select: none; }
+  .week-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .week-meta { flex: 1; min-width: 0; }
+  .week-name { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .week-dates { font-size: 11px; color: var(--muted); margin-top: 1px; }
+  .week-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .week-km { font-family: 'DM Serif Display', serif; font-size: 16px; color: var(--text); }
+  .week-km span { font-family: 'DM Sans', sans-serif; font-size: 10px; color: var(--muted); }
+  .chevron { font-size: 12px; color: var(--muted); transition: transform 0.25s; }
+  .week-card.open .chevron { transform: rotate(90deg); }
+
+  .week-detail { display: none; border-top: 1px solid var(--border); padding: 4px 0 8px; }
+  .week-card.open .week-detail { display: block; }
+
+  .day-row { display: grid; grid-template-columns: 44px 1fr; gap: 0 10px; padding: 8px 14px; }
+  .day-row + .day-row { border-top: 1px solid rgba(255,255,255,0.04); }
+  .day-lbl { font-size: 11px; font-weight: 600; color: var(--muted); padding-top: 2px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .day-desc { font-size: 13px; color: var(--text); line-height: 1.55; }
+  .day-desc.is-rest { color: var(--muted); font-style: italic; }
+  .day-desc.is-quality { color: var(--accent2); }
+  .day-desc.is-long { color: var(--accent); }
+  .day-desc.is-race { color: var(--race-c); font-weight: 600; }
+
+  .overview-wrap { padding: 16px 12px; }
+  .ov-section-title { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; margin-top: 20px; }
+  .ov-section-title:first-child { margin-top: 0; }
+  .bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+  .bar-label { font-size: 11px; color: var(--muted); min-width: 58px; }
+  .bar-track { flex: 1; height: 5px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 3px; }
+  .bar-val { font-size: 11px; color: var(--muted); min-width: 38px; text-align: right; }
+  .legend { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  .paces-wrap { padding: 16px 12px; }
+  .pace-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; margin-bottom: 12px; }
+  .pace-card-title { padding: 12px 16px 8px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); border-bottom: 1px solid var(--border); }
+  .pace-row-item { display: flex; justify-content: space-between; align-items: center; padding: 11px 16px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .pace-row-item:last-child { border-bottom: none; }
+  .pace-type { font-size: 14px; color: var(--text); }
+  .pace-val { font-family: 'DM Serif Display', serif; font-size: 16px; }
+  .pace-note { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; font-size: 13px; color: var(--muted); line-height: 1.65; }
+  .pace-note strong { color: var(--text); font-weight: 500; }
+
+  .dot-easy { background: var(--easy-c); }
+  .dot-tempo { background: var(--tempo-c); }
+  .dot-peak { background: var(--peak-c); }
+  .dot-recovery { background: var(--recover-c); }
+  .dot-race { background: var(--race-c); }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-label">Training Plan · Stavanger 2026</div>
+  <div class="hero-title">Run your <em>3:25</em></div>
+  <div class="hero-sub">29 August · 20 weeks · 2 quality sessions/week</div>
+  <div class="hero-stats">
+    <div class="hero-stat"><span class="hero-stat-val">20</span><span class="hero-stat-lbl">Weeks</span></div>
+    <div class="hero-stat"><span class="hero-stat-val">75</span><span class="hero-stat-lbl">Peak km</span></div>
+    <div class="hero-stat"><span class="hero-stat-val">37</span><span class="hero-stat-lbl">Longest</span></div>
+    <div class="hero-stat"><span class="hero-stat-val">3:25</span><span class="hero-stat-lbl">Goal</span></div>
+  </div>
+</div>
+
+<div class="tabs-wrap">
+  <button class="tab-btn active" onclick="showTab('plan')">Full Plan</button>
+  <button class="tab-btn" onclick="showTab('overview')">Overview</button>
+  <button class="tab-btn" onclick="showTab('paces')">Pace Guide</button>
+</div>
+
+<div id="tab-plan" class="tab-panel active"></div>
+
+<div id="tab-overview" class="tab-panel">
+  <div class="overview-wrap">
+    <div class="ov-section-title">Weekly volume</div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--easy-c)"></div>Pre-plan</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--tempo-c)"></div>Build</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--peak-c)"></div>Peak</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--recover-c)"></div>Recovery</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--race-c)"></div>Taper/Race</div>
+    </div>
+    <div id="overview-bars"></div>
+  </div>
+</div>
+
+<div id="tab-paces" class="tab-panel">
+  <div class="paces-wrap">
+    <div class="pace-card">
+      <div class="pace-card-title">Target paces — 3:25 goal (4:52/km)</div>
+      <div class="pace-row-item"><span class="pace-type">Easy / recovery</span><span class="pace-val" style="color:var(--easy-c)">5:45–6:15</span></div>
+      <div class="pace-row-item"><span class="pace-type">Long run</span><span class="pace-val" style="color:var(--easy-c)">5:30–6:00</span></div>
+      <div class="pace-row-item"><span class="pace-type">Sub-threshold</span><span class="pace-val" style="color:var(--tempo-c)">5:00–5:10</span></div>
+      <div class="pace-row-item"><span class="pace-type">Near-threshold (late plan)</span><span class="pace-val" style="color:var(--tempo-c)">4:55–5:05</span></div>
+      <div class="pace-row-item"><span class="pace-type">Marathon pace (MP)</span><span class="pace-val" style="color:var(--peak-c)">4:50–4:55</span></div>
+      <div class="pace-row-item"><span class="pace-type">Strides</span><span class="pace-val" style="color:var(--recover-c)">4:10–4:30</span></div>
+      <div class="pace-row-item"><span class="pace-type">Race goal</span><span class="pace-val" style="color:var(--race-c)">4:52/km</span></div>
+    </div>
+    <div class="pace-note">
+      <strong>Sub-threshold feel:</strong> You could speak in short sentences but wouldn't want to. Comfortably hard — well below gasping. This is the bread-and-butter session throughout the plan.<br><br>
+      <strong>Near-threshold (weeks 8–13):</strong> A notch harder. You can manage a word or two but it requires effort. Be honest — if you're on or over threshold, back off. The stimulus is in the volume, not the intensity.<br><br>
+      <strong>MP segments on long runs:</strong> These replace one of the weekly sub-threshold sessions as the plan progresses. Run these as a block in the middle or end of the long run — not the whole thing.<br><br>
+      <strong>Strides:</strong> 20-second smooth accelerations at the end of easy runs. Not sprints — controlled and relaxed.
+    </div>
+  </div>
+</div>
+
+<script>
+var weeks = [
+  // ── PRE-PLAN ──────────────────────────────────────────────────────────────
+  {phase:'pre',badge:'easy',num:'Pre 1',dates:'14–20 Apr',focus:'Aerobic base',km:47,days:[
+    {d:'Mon',s:'Rest or cross-train (30 min easy bike/swim)',t:'rest'},
+    {d:'Tue',s:'Easy run 10 km',t:'easy'},
+    {d:'Wed',s:'Sub-threshold: 8 km easy + 2×10 min sub-threshold (3 min jog) + 2 km cool-down',t:'quality'},
+    {d:'Thu',s:'Rest',t:'rest'},
+    {d:'Fri',s:'Easy run 10 km + 4×20 sec strides',t:'easy'},
+    {d:'Sat',s:'Rest',t:'rest'},
+    {d:'Sun',s:'Long run 14 km easy',t:'long'}
+  ]},
+  {phase:'pre',badge:'easy',num:'Pre 2',dates:'21–27 Apr',focus:'Double quality begins',km:50,days:[
+    {d:'Mon',s:'Rest',t:'rest'},
+    {d:'Tue',s:'Easy run 10 km',t:'easy'},
+    {d:'Wed',s:'Sub-threshold: 8 km easy + 3×8 min sub-threshold (2 min jog) + 2 km cool-down',t:'quality'},
+    {d:'Thu',s:'Rest',t:'rest'},
+    {d:'Fri',s:'Easy run 10 km',t:'easy'},
+    {d:'Sat',s:'Sub-threshold: 6 km easy + 20 min continuous sub-threshold + 2 km cool-down',t:'quality'},
+    {d:'Sun',s:'Long run 16 km easy',t:'long'}
+  ]},
+  {phase:'pre',badge:'easy',num:'Pre 3',dates:'28 Apr–4 May',focus:'Build tempo volume',km:54,days:[
+    {d:'Mon',s:'Rest',t:'rest'},
+    {d:'Tue',s:'Easy run 12 km',t:'easy'},
+    {d:'Wed',s:'Sub-threshold: 2 km warm-up + 3×10 min sub-threshold (2 min jog) + 2 km cool-down',t:'quality'},
+    {d:'Thu',s:'Easy run 10 km',t:'easy'},
+    {d:'Fri',s:'Rest',t:'rest'},
+    {d:'Sat',s:'Sub-threshold: 6 km easy + 25 min continuous sub-threshold + 2 km cool-down',t:'quality'},
+    {d:'Sun',s:'Long run 18 km easy',t:'long'}
+  ]},
+  {phase:'pre',badge:'recovery',num:'Pre 4',dates:'5–11 May',focus:'Recovery week',km:42,days:[
+    {d:'Mon',s:'Rest',t:'rest'},
+    {d:'Tue',s:'Easy run 10 km',t:'easy'},
+    {d:'Wed',s:'Sub-threshold: 6 km easy + 2×10 min sub-threshold (2 min jog) + 2 km cool-down',t:'quality'},
+    {d:'Thu',s:'Rest',t:'rest'},
+    {d:'Fri',s:'Easy run 8 km',t:'easy'},
+    {d:'Sat',s:'Rest',t:'rest'},
+    {d:'Sun',s:'Long run 14 km easy',t:'long'}
+  ]},
+  {phase:'pre',badge:'easy',num:'Pre 5',dates:'12–18 May',focus:'Ready to build',km:58,days:[
+    {d:'Mon',s:'Rest',t:'rest'},
+    {d:'Tue',s:'Easy run 12 km',t:'easy'},
+    {d:'Wed',s:'Sub-threshold: 2 km warm-up + 3×12 min sub-threshold (2 min jog) + 2 km cool-down',t:'quality'},
+    {d:'Thu',s:'Easy run 10 km',t:'easy'},
+    {d:'Fri',s:'Rest',t:'rest'},
+    {d:'Sat',s:'Sub-threshold: 6 km easy + 30 min continuous sub-threshold + 2 km cool-down',t:'quality'},
+    {d:'Sun',s:'Long run 21 km easy',t:'long'}
+  ]},
+
+  // ── BUILD ──────────────────────────────────────────────────────────────────
+  {phase:'build',badge:'tempo',num:'Week 1',dates:'19–25 May',focus:'5-day week, 2 quality sessions',km:61,days:[
+    {d:'Mon',s:'Rest',t:'rest'},
+    {d:'Tue',s:'Easy run 12 km',t:'easy'},
+    {d:'Wed',s:'Sub-threshold: 2 km warm-up + 4×10 min sub-threshold (2 min jog) + 2 km cool-down',t:'quality'},
+    {d:'Thu',s:'Easy run 10 km',t:'easy'},
+    {d:'Fri',s:'Sub-threshold: 6 km easy + 30 min continuous sub-threshold + 2 km cool-down',t:'quality'},
+    {d:'Sat',s:'Rest',t:'rest'},
+    {d:'Sun',s:'Long run 23 km easy',t:'long'}
+  ]},
+  {phase:'build',badge:'tempo',num:'Week 2',dates:'26 May–1 Jun',focus:'Extend sessions',km:64,days:[
+    {d:'Mon',s:'Rest',t:'rest'},
+    {d:'Tue',s:'Easy run 12 km',t:'easy'},
+    {d:'Wed',s:'Sub-threshold: 2 km warm-up + 4×12 min sub-threshold (90 sec jog) + 2 km cool-down',t:'quality'},
+    {d:'Thu',s:'Easy run 10 km',t:'easy'},
+    {d:'Fri',s:'Sub-threshold: 6 km easy + 35 min continuous sub-threshold + 2 km cool-down',t:'quality'},
+    {d:'Sat',s:'Rest',t:'rest'},
+    {d:'Sun',s:'Long run 25 km easy',t:'long'}
+  ]},
+  {phase:'build',badge:'tempo',num:'Week 3',dates:'2–8 Jun',focus:'Introduce MP on long run',km:66,days:[
+    {d:'Mon',s:'Rest',t:'rest'},
+    {d:'Tue',s:'Easy run 12 km',t:'easy'},
+    {d:'Wed',s:'Sub-threshold: 2 km warm-up + 40 min continuous sub-threshold + 2 km cool-down',t:'quality'},
+    {d:'Thu',s:'Easy run 11 km',t:'easy'},
+    {d:'Fri',s:'Easy run 10 km + 4×20 sec strides',t:'easy'},
+    {d:'Sat',s:'Rest',t:'rest'},
+    {d:'Sun',s:'Long run 27 km — last 6 km at MP (replaces 2nd sub-threshold this week)',t:'long'}
+  ]},
+  {phase:'build',badge:'recovery',num:'Week 4',dates:'9–15 Jun',focus:'Recovery week',km:48,days:[
+    {d:'Mon',s:'Rest',t:'rest'},
+    {d:'Tue',s:'Easy run 10 km',t:'easy'},
+    {d:'Wed',s:'Sub-threshold: 2 km warm-up + 2×12 min sub-threshold (2 min jog) + 2 km cool-down',t:'quality'},
+    {d:'Thu',s:'Rest',t:'rest'},
+    {d:'Fri',s:'Easy run 8 km + 4×20 sec strides',t:'easy'},
+    {d:'Sat',s:'Rest',t:'rest'},
+    {d:'Sun',s:'Long run 18 km easy',t:'long'}
+  ]},
+  {phase:'build',badge:'tempo',num:'Week 5',dates:'16–22 Jun',focus:'Push tempo volume',km:68,days:[
+    {d:'Mon',s:'Rest',t:'rest'},
+    {d:'Tue',s:'Easy run 13 km',t:'easy'},
+    {d:'Wed',s:'Sub-threshold: 2 km warm-up + 4×12 min sub-threshold (90 sec jog) + 2 km cool-down',t:'quality'},
+    {d:'Thu',s:'Easy run 12 km',t:'easy'},
+    {d:'Fri',s:'Sub-threshold: 6 km easy + 40 min continuous sub-threshold + 2 km cool-down',t:'quality'},
+    {d:'Sat',s:'Rest',t:'rest'},
+    {d:'Sun',s:'Long run 29 km easy',t:'long'}
+  ]},
+  {phase:'build',badge:'tempo',num:'Week 6',dates:'23–29 Jun',focus:'MP on long run',km:69,days:[
+    {d:'Mon',s:'Rest',t:'rest'},
+    {d:'Tue',s:'Easy run 13 km',t:'easy'},
+    {d:'Wed',s:'Sub-threshold: 2 km warm-up + 5×10 min sub-threshold (90 sec jog) + 2 km cool-down',t:'quality'},
+    {d:'Thu',s:'Easy run 12 km',t:'easy'},
+    {d:'Fri',s:'Easy run 10 km + 4×20 sec strides',t:'easy'},
+    {d:'Sat',s:'Rest',t:'rest'},
+    {d:'Sun',s:'Long run 29 km — last 8 km at MP (replaces 2nd sub-threshold this week)',t:'long'}
+  ]},
+
+  // ── PEAK ──────────────────────────────────────────────────────────────────
+  {phase:'peak',badge:'peak',num:'Week 7',dates:'30 Jun–6 Jul',focus:'Near-threshold begins',km:71,days:[
+    {d:'Mon',s:'Rest',t:'rest'},
+    {d:'Tue',s:'Easy run 13 km',t:'easy'},
+    {d:'Wed',s:'Near-threshold: 2 km warm-up + 4×12 min near-threshold (90 sec jog) + 2 km cool-down. A notch harder than previous tempos — still below threshold.',t:'quality'},
+    {d:'Thu',s:'Easy run 12 km',t:'easy'},
+    {d:'Fri',s:'Sub-threshold: 6 km easy + 40 min continuous sub-threshold + 2 km cool-down',t:'quality'},
+    {d:'Sat',s:'Rest',t:'rest'},
+    {d:'Sun',s:'Long run 31 km easy',t:'long'}
+  ]},
+  {phase:'peak',badge:'peak',num:'Week 8',dates:'7–13 Jul',focus:'High volume + MP',km:73,days:[
+    {d:'Mon',s:'Rest',t:'rest'},
+    {d:'Tue',s:'Easy run 14 km',t:'easy'},
+    {d:'Wed',s:'Near-threshold: 2 km warm-up + 5×10 min near-threshold (90 sec jog) + 2 km cool-down',t:'quality'},
+    {d:'Thu',s:'Easy run 12 km',t:'easy'},
+    {d:'Fri',s:'Easy run 10 km + 4×20 sec strides',t:'easy'},
+    {d:'Sat',s:'Rest',t:'rest'},
+    {d:'Sun',s:'Long run 33 km — last 10 km at MP (replaces 2nd sub-threshold this week)',t:'long'}
+  ]},
+  {phase:'peak',badge:'recovery',num:'Week 9',dates:'14–20 Jul',focus:'Recovery week',km:51,days:[
+    {d:'Mon',s:'Rest',t:'rest'},
+    {d:'Tue',s:'Easy run 12 km',t:'easy'},
+    {d:'Wed',s:'Sub-threshold: 2 km warm-up + 2×12 min sub-threshold (2 min jog) + 2 km cool-down',t:'quality'},
+    {d:'Thu',s:'Rest',t:'rest'},
+    {d:'Fri',s:'Easy run 10 km + 4×20 sec strides',t:'easy'},
+    {d:'Sat',s:'Rest',t:'rest'},
+    {d:'Sun',s:'Long run 21 km easy',t:'long'}
+  ]},
+  {phase:'peak',badge:'peak',num:'Week 10',dates:'21–27 Jul',focus:'Peak tempo block',km:73,days:[
+    {d:'Mon',s:'Rest',t:'rest'},
+    {d:'Tue',s:'Easy run 14 km',t:'easy'},
+    {d:'Wed',s:'Near-threshold: 2 km warm-up + 50 min continuous near-threshold + 2 km cool-down',t:'quality'},
+    {d:'Thu',s:'Easy run 12 km',t:'easy'},
+    {d:'Fri',s:'Sub-threshold: 6 km easy + 35 min continuous sub-threshold + 2 km cool-down',t:'quality'},
+    {d:'Sat',s:'Rest',t:'rest'},
+    {d:'Sun',s:'Long run 33 km easy',t:'long'}
+  ]},
+  {phase:'peak',badge:'peak',num:'Week 11',dates:'28 Jul–3 Aug',focus:'PEAK long run 37 km',km:75,days:[
+    {d:'Mon',s:'Rest',t:'rest'},
+    {d:'Tue',s:'Easy run 14 km',t:'easy'},
+    {d:'Wed',s:'Near-threshold: 2 km warm-up + 4×12 min near-threshold (90 sec jog) + 2 km cool-down',t:'quality'},
+    {d:'Thu',s:'Easy run 12 km',t:'easy'},
+    {d:'Fri',s:'Easy run 10 km + 4×20 sec strides',t:'easy'},
+    {d:'Sat',s:'Rest',t:'rest'},
+    {d:'Sun',s:'PEAK LONG RUN — 37 km easy (5:30–6:00/km). Fuel and hydrate exactly as race day. This is the peak of the plan.',t:'long'}
+  ]},
+  {phase:'peak',badge:'recovery',num:'Week 12',dates:'4–10 Aug',focus:'Recovery week',km:50,days:[
+    {d:'Mon',s:'Rest',t:'rest'},
+    {d:'Tue',s:'Easy run 12 km',t:'easy'},
+    {d:'Wed',s:'Sub-threshold: 2 km warm-up + 2×12 min sub-threshold (2 min jog) + 2 km cool-down',t:'quality'},
+    {d:'Thu',s:'Easy run 10 km',t:'easy'},
+    {d:'Fri',s:'Rest',t:'rest'},
+    {d:'Sat',s:'Easy run 8 km + 4×20 sec strides',t:'easy'},
+    {d:'Sun',s:'Long run 18 km easy',t:'long'}
+  ]},
+
+  // ── TAPER — tightened to 2 weeks + race week ───────────────────────────────
+  {phase:'taper',badge:'recovery',num:'Week 13',dates:'11–17 Aug',focus:'Taper week 1',km:56,days:[
+    {d:'Mon',s:'Rest',t:'rest'},
+    {d:'Tue',s:'Easy run 12 km',t:'easy'},
+    {d:'Wed',s:'Sub-threshold: 2 km warm-up + 3×10 min sub-threshold (2 min jog) + 2 km cool-down',t:'quality'},
+    {d:'Thu',s:'Easy run 10 km',t:'easy'},
+    {d:'Fri',s:'Easy run 8 km + 4×20 sec strides',t:'easy'},
+    {d:'Sat',s:'Rest',t:'rest'},
+    {d:'Sun',s:'Long run 25 km — middle 10 km at MP. Last big effort.',t:'long'}
+  ]},
+  {phase:'taper',badge:'recovery',num:'Week 14',dates:'18–24 Aug',focus:'Taper week 2 — sharpen',km:38,days:[
+    {d:'Mon',s:'Rest',t:'rest'},
+    {d:'Tue',s:'Easy run 10 km',t:'easy'},
+    {d:'Wed',s:'Sub-threshold: 2 km warm-up + 20 min sub-threshold + 2 km cool-down. Keep it controlled.',t:'quality'},
+    {d:'Thu',s:'Easy run 8 km + 4×20 sec strides',t:'easy'},
+    {d:'Fri',s:'Rest',t:'rest'},
+    {d:'Sat',s:'Easy run 6 km',t:'easy'},
+    {d:'Sun',s:'Easy run 10 km — relaxed, feel good',t:'easy'}
+  ]},
+  {phase:'taper',badge:'race',num:'Week 15',dates:'25–29 Aug',focus:'Race week',km:18,days:[
+    {d:'Mon',s:'Rest',t:'rest'},
+    {d:'Tue',s:'Easy run 8 km + 4×20 sec strides',t:'easy'},
+    {d:'Wed',s:'Easy run 5 km',t:'easy'},
+    {d:'Thu',s:'Rest',t:'rest'},
+    {d:'Fri',s:'Easy run 4 km — very easy, just shake the legs out',t:'easy'},
+    {d:'Sat',s:'Rest — prepare kit, eat well, sleep early',t:'rest'},
+    {d:'Sun',s:'RACE DAY — Stavanger Marathon. Goal: 3:25 🏃',t:'race'}
+  ]}
+];
+
+var dotColors = {easy:'var(--easy-c)',tempo:'var(--tempo-c)',peak:'var(--peak-c)',recovery:'var(--recover-c)',race:'var(--race-c)'};
+var phaseLabels = {pre:'Pre-plan — base building (5 weeks)',build:'Main block — build phase (weeks 1–6)',peak:'Main block — peak phase (weeks 7–12)',taper:'Taper & race (weeks 13–15)'};
+var barColors = {pre:'var(--easy-c)',build:'var(--tempo-c)',peak:'var(--peak-c)',taper:'var(--recover-c)'};
+
+function dayClass(t){
+  if(t==='rest') return 'is-rest';
+  if(t==='quality') return 'is-quality';
+  if(t==='long') return 'is-long';
+  if(t==='race') return 'is-race';
+  return '';
+}
+
+function buildPlan(){
+  var container = document.getElementById('tab-plan');
+  var currentPhase = null;
+  weeks.forEach(function(w){
+    if(w.phase !== currentPhase){
+      currentPhase = w.phase;
+      var ph = document.createElement('div');
+      ph.className = 'phase-header';
+      ph.textContent = phaseLabels[w.phase];
+      container.appendChild(ph);
+    }
+    var card = document.createElement('div');
+    card.className = 'week-card';
+    var daysHtml = w.days.map(function(d){
+      return '<div class="day-row"><span class="day-lbl">'+d.d+'</span><span class="day-desc '+dayClass(d.t)+'">'+d.s+'</span></div>';
+    }).join('');
+    card.innerHTML =
+      '<div class="week-header">'+
+        '<div class="week-dot dot-'+w.badge+'"></div>'+
+        '<div class="week-meta">'+
+          '<div class="week-name">'+w.num+' — '+w.focus+'</div>'+
+          '<div class="week-dates">'+w.dates+'</div>'+
+        '</div>'+
+        '<div class="week-right">'+
+          '<div class="week-km">'+w.km+'<span> km</span></div>'+
+          '<span class="chevron">›</span>'+
+        '</div>'+
+      '</div>'+
+      '<div class="week-detail">'+daysHtml+'</div>';
+    card.querySelector('.week-header').addEventListener('click', function(){
+      card.classList.toggle('open');
+    });
+    container.appendChild(card);
+  });
+}
+
+function buildOverview(){
+  var container = document.getElementById('overview-bars');
+  var maxKm = Math.max.apply(null, weeks.map(function(w){return w.km;}));
+  weeks.forEach(function(w){
+    var pct = Math.round(w.km / maxKm * 100);
+    var color = w.badge==='race' ? 'var(--race-c)' : barColors[w.phase];
+    var row = document.createElement('div');
+    row.className = 'bar-row';
+    row.innerHTML =
+      '<span class="bar-label">'+w.num+'</span>'+
+      '<div class="bar-track"><div class="bar-fill" style="width:'+pct+'%;background:'+color+'"></div></div>'+
+      '<span class="bar-val">'+w.km+' km</span>';
+    container.appendChild(row);
+  });
+}
+
+function showTab(name){
+  ['plan','overview','paces'].forEach(function(t){
+    document.getElementById('tab-'+t).classList.toggle('active', t===name);
+  });
+  document.querySelectorAll('.tab-btn').forEach(function(btn,i){
+    btn.classList.toggle('active', ['plan','overview','paces'][i]===name);
+  });
+}
+
+buildPlan();
+buildOverview();
+</script>
+</body>
+</html>
